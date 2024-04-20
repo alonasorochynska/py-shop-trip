@@ -1,4 +1,8 @@
+import datetime
 from dataclasses import dataclass
+from math import sqrt
+
+from app.customer import Customer
 
 
 @dataclass
@@ -7,15 +11,29 @@ class Shop:
     location: list
     products: dict
 
+    def calculate_trip_distance(self, customer: Customer) -> int | float:
+        shop_x = self.location[0]
+        shop_y = self.location[1]
+        customer_x = customer.location[0]
+        customer_y = customer.location[1]
+        return sqrt((shop_x - customer_x) ** 2 + (shop_y - customer_y) ** 2)
 
-def print_check(name: str, product_cart: dict, shop: Shop) -> None:
-    print(f"\nDate: 04/01/2021 12:33:41\n"
-          f"Thanks, {name}, for your purchase!\n"
-          f"You have bought:")
-    total_cost = 0
-    for product, number in product_cart.items():
-        cost = shop.products[product] * number
-        print(f"{number} {product}s for {cost} dollars")
-        total_cost += cost
-    print(f"Total cost is {round(total_cost, 2)} dollars\n"
-          f"See you again!\n")
+    def shopping_cost(self, customer: Customer) -> int | float:
+        total_price = 0
+        for product, amount in customer.product_cart.items():
+            total_price += self.products.get(product) * amount
+        return total_price
+
+    def issue_receipt(self, customer: Customer) -> None:
+        date = datetime.datetime.now()
+        print(f'\nDate: {date.strftime("%d/%m/%Y %H:%M:%S")}'
+              f"\nThanks, {customer.name}, for your purchase!"
+              f"\nYou have bought:")  # noqa: E231
+        for product, amount in customer.product_cart.items():
+            cost = self.products[product] * amount
+            print(f"{amount} {product}s for "
+                  f"{int(cost) if float(cost) == int(cost) else cost} dollars")
+        print(
+            f"Total cost is {self.shopping_cost(customer)} dollars"
+            f"\nSee you again!"
+        )
